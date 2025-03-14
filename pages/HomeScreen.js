@@ -32,7 +32,7 @@ function matchStrings(query, target) {
   query = query.toLowerCase();
   target = target.toLowerCase();
 
-  if (target.includes(query)) return 1; // Highest priority
+  if (target.includes(query)) return 1; 
 
   const distance = levenshteinDistance(query, target);
   const maxLen = Math.max(query.length, target.length);
@@ -73,6 +73,7 @@ const HomeScreen = ({ navigation }) => {
   const [filteredSites, setFilteredSites] = useState([]);
   const [selectedSite, setSelectedSite] = useState(null);
   const [siteId, setSiteId] = useState("");
+  const [place, setPlace] = useState("");
 
   const currentDate = new Date();
   const pastDate = new Date(currentDate);
@@ -82,12 +83,12 @@ const HomeScreen = ({ navigation }) => {
   const [endDate, setEndDate] = useState(formatDate(currentDate));
 
   useEffect(() => {
-    if (selectedCity && query.trim() !== "") {
+    if (selectedCity) {
       const results = findSiteByCity(selectedCity, query);
       setFilteredSites(results);
     }
   }, [query, selectedCity]);
-  
+
   if (!selectedCity) {
     return (
       <View style={styles.container}>
@@ -118,7 +119,7 @@ const HomeScreen = ({ navigation }) => {
           setSelectedSite(null);
         }}
         style={styles.input}
-        placeholder="Enter Area Name"
+        placeholder="Enter site name..."
       />
 
       {query.length > 0 && !selectedSite && filteredSites.length > 0 && (
@@ -128,16 +129,16 @@ const HomeScreen = ({ navigation }) => {
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <TouchableOpacity
-              onPress={() => {
-                setSelectedSite(item.name);
-                setSiteId(item.id || "");  // Ensure siteId is set correctly
-                setFilteredSites([]);
-              }}
-              style={styles.dropdownItem}
-            >
-              <Text style={styles.result}>{item.name}</Text>
-            </TouchableOpacity>
-            
+                onPress={() => {
+                  setSelectedSite(item.name);
+                  setSiteId(item.id)
+                  setPlace(item.name)
+                  setFilteredSites([]);
+                }}
+                style={styles.dropdownItem}
+              >
+                <Text style={styles.result}>{item.name}</Text>
+              </TouchableOpacity>
             )}
           />
         </View>
@@ -153,17 +154,10 @@ const HomeScreen = ({ navigation }) => {
       <TextInput value={endDate} onChangeText={setEndDate} style={styles.input} />
 
       <Button
-  title="Find Area & Fetch Data"
-  onPress={() => {
-    if (!siteId) {
-      alert("Please select a valid area before fetching data!");
-      return;
-    }
-    navigation.navigate("Graph", { siteId, startDate, endDate });
-  }}
-  color="#4CAF50"
-/>
-
+        title="Find Site & Fetch Data"
+        onPress={() => navigation.navigate("Graph", { siteId: siteId, startDate, endDate, place })}
+        color="#4CAF50"
+      />
     </View>
   );
 };
@@ -171,54 +165,37 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1F3B5F",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 30,
+    padding: 20,
+    backgroundColor: "#f5f5f5",
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "bold",
-    color: "#FFFFFF",
-    marginTop: 40,
-    marginBottom: 40,
     textAlign: "center",
-    textShadowColor: "rgba(0, 0, 0, 0.5)",
-    textShadowOffset: { width: 3, height: 3 },
-    textShadowRadius: 10,
+    marginBottom: 8,
+    color: "#333",
   },
   imageContainer: {
+    flex: 1,
     alignItems: "center",
-    marginVertical: 10,
-    width: 160, // Improved size for spacing
+    margin: 10,
   },
   image: {
-    width: 140, 
-    height: 140, 
-    borderRadius: 20,
-    borderWidth: 4,
-    borderColor: "#00BFFF",
-    backgroundColor: "#E6F7FF", 
-    shadowColor: "#00BFFF",
-    shadowOpacity: 0.9,
-    shadowRadius: 15,
-    elevation: 12,
+    width: 150,
+    height: 150,
+    borderRadius: 12,
   },
   cityText: {
-    fontSize: 20,
+    fontSize: 16,
     marginTop: 8,
-    color: "#B0C4DE",
-    fontWeight: "600",
   },
   input: {
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
-    padding: 10,
+    padding: 8,
     marginBottom: 16,
-    width: "90%",
-    fontSize: 18,
-    backgroundColor: "#f0f8ff",
+    fontSize: 16,
   },
   result: {
     fontSize: 16,
@@ -227,42 +204,37 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   dropdownItem: {
-    padding: 12,
+    padding: 10,
     backgroundColor: "#e0e0e0",
-    marginVertical: 4,
+    marginVertical: 2,
   },
   selectedSite: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#4CAF50",
-    marginTop: 12,
+    marginTop: 10,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginTop: 10,
   },
   dropdownContainer: {
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
     backgroundColor: "#fff",
-    width: "90%",
-    maxHeight: 200,
-    marginTop: 10,
-  },
-  buttonContainer: {
-    marginTop: 40,
-    marginBottom: 40,
-    width: "90%",
-  },
-  label:{
-    color:'#fff',
-    fontSize:30,
-    marginTop:20,
-    marginBottom:20,
-    fontWeight:"bold",
-  },
-  find:{
-    marginTop:20,
+    position: "absolute",
+    top: 110,
+    left: 20,
+    right: 20,
+    zIndex: 1000,
+    elevation: 5,
+    paddingVertical: 4,
+    minWidth: 200, 
+    minHeight: 100,
+    maxWidth: "90%", 
   },
 });
-
-
 
 export default HomeScreen;

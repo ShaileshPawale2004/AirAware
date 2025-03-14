@@ -1,8 +1,6 @@
-
-
-import React, { useState } from "react";
-import { View, Text, TextInput, Button, Alert} from "react-native";
-import sites  from "./data"; 
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, Button, Alert, StyleSheet } from "react-native";
+import { sites } from "./data"; // Importing the sites list
 
 function levenshteinDistance(s1, s2) {
   const dp = Array(s1.length + 1)
@@ -24,27 +22,32 @@ function levenshteinDistance(s1, s2) {
 
 function matchStrings(str1, str2) {
   const distance = levenshteinDistance(str1.toLowerCase(), str2.toLowerCase());
-
   const maxLen = Math.max(str1.length, str2.length);
-  const similarity = (maxLen - distance) / maxLen;
-  console.log("similarity: ", similarity,distance,maxLen);
+  const similarity = (maxLen - distance) / maxLen; // Normalize score
 
-  return similarity >= 0.5;
+  return similarity >= 0.5; // Return true if 70% similarity
 }
 
+// Updated findSiteByCity function to handle city matching better
 const findSiteByCity = (city) => {
   console.log("city: ", city);
-  for (let i in sites) {
-    console.log(i, "-> ", sites[i]);
-    if (sites[i]?.name && matchStrings(city, sites[i]?.name)) {
-      return sites[i];
+  //console.log("Sites: ", sites, " -> ", sites.length);
+    for(let i in sites) {
+      console.log(i, "-> ", sites[i]);
+      if(sites[i]?.name && matchStrings(city, sites[i]?.name)) {
+        //console.log(sites[i], "->", city, "|", sites[i]?.name);
+        return sites[i];
+      }
+  
+      if(sites[i]?.city &&  matchStrings(city, sites[i]?.city)){
+       // console.log("city: ", sites[i].id);
+        return sites[i];
+      }
+  
     }
-    if (sites[i]?.city && matchStrings(city, sites[i]?.city)) {
-      return sites[i];
-    }
-  }
-};
+  };
 
+// 🛠 Helper function to format date as YYYY-MM-DDTHH:MM
 const formatDate = (date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -55,30 +58,28 @@ const formatDate = (date) => {
 };
 
 const HomeScreen = ({ navigation }) => {
-
+  // 🛠 Get current date and time
   const currentDate = new Date();
   const pastDate = new Date(currentDate);
-  pastDate.setDate(currentDate.getDate() - 7);
+  pastDate.setDate(currentDate.getDate() - 7); // 7 days ago
 
+  // 🛠 Use formatted dates as default values
   const [city, setCity] = useState("");
   const [startDate, setStartDate] = useState(formatDate(pastDate));
   const [endDate, setEndDate] = useState(formatDate(currentDate));
 
   const handleSubmit = () => {
-    console.log("city: ", city);
     if (!city.trim()) {
-
       Alert.alert("Invalid Input", "Please enter a city name.");
       return;
     }
 
     const site = findSiteByCity(city);
-    console.log("site: ", sites, site);
 
     if (!site) {
       Alert.alert(
         "No Monitoring Site", 
-        `No air quality monitoring site found in ${city}. Available cities: Delhi, Mumbai, Bengaluru, Hyderabad, Kolkata`
+        "No air quality monitoring site found in ${city}. Available cities: Delhi, Mumbai, Bengaluru, Hyderabad, Kolkata"
       );
       return;
     }
@@ -96,24 +97,81 @@ const HomeScreen = ({ navigation }) => {
   };
 
   return (
-    <View>
-      <Text>AirAware</Text>
-      <Text>Available Cities: Delhi, Mumbai, Bengaluru, Hyderabad, Kolkata</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Air Quality Monitor</Text>
+      <Text style={styles.subtitle}>Available Cities: Delhi, Mumbai, Bengaluru, Hyderabad, Kolkata</Text>
 
-      <View>
-        <Text>City:</Text>
-        <TextInput value={city} onChangeText={setCity} placeholder="Enter city name " />
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>City:</Text>
+        <TextInput
+          value={city}
+          onChangeText={setCity}
+          style={styles.input}
+          placeholder="Enter city name (e.g., Mumbai)"
+        />
 
-        <Text>Start Date:</Text>
-        <TextInput value={startDate} onChangeText={setStartDate} />
+        <Text style={styles.label}>Start Date:</Text>
+        <TextInput
+          value={startDate}
+          onChangeText={setStartDate}
+          style={styles.input}
+        />
 
-        <Text>End Date:</Text>
-        <TextInput value={endDate} onChangeText={setEndDate} />
+        <Text style={styles.label}>End Date:</Text>
+        <TextInput
+          value={endDate}
+          onChangeText={setEndDate}
+          style={styles.input}
+        />
 
-        <Button title="Find Site & Fetch Data" onPress={handleSubmit} />
+        <Button 
+          title="Find Site & Fetch Data" 
+          onPress={handleSubmit}
+          color="#4CAF50"
+        />
       </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#f5f5f5'
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 8,
+    color: '#333'
+  },
+  subtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#666'
+  },
+  inputContainer: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 12,
+    elevation: 2
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 4,
+    color: '#444'
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 16,
+    fontSize: 16
+  }
+});
 
 export default HomeScreen;

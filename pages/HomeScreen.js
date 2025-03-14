@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, Button, Alert, StyleSheet } from "react-native";
-import  sites  from "./data"; // Importing the sites list
+import { View, Text, TextInput, Button, StyleSheet, FlatList, TouchableOpacity, Image } from "react-native";
+import sites from "./data";
+
+const cityImages = [
+  { name: "Bengaluru", src: require("../assets/bengaluru.jpeg") },
+  { name: "Hyderabad", src: require("../assets/hyderabad.jpeg") },
+  { name: "Kolkata", src: require("../assets/kolkata.jpeg") },
+  { name: "Mumbai", src: require("../assets/mumbai.jpeg") },
+  { name: "Delhi", src: require("../assets/delhi.jpeg") },
+];
 
 function levenshteinDistance(s1, s2) {
   const dp = Array(s1.length + 1)
@@ -20,34 +28,35 @@ function levenshteinDistance(s1, s2) {
   return dp[s1.length][s2.length];
 }
 
-function matchStrings(str1, str2) {
-  const distance = levenshteinDistance(str1.toLowerCase(), str2.toLowerCase());
-  const maxLen = Math.max(str1.length, str2.length);
-  const similarity = (maxLen - distance) / maxLen; // Normalize score
+function matchStrings(query, target) {
+  query = query.toLowerCase();
+  target = target.toLowerCase();
 
-  return similarity >= 0.3; // Return true if 70% similarity
+  if (target.includes(query)) return 1; // Highest priority
+
+  const distance = levenshteinDistance(query, target);
+  const maxLen = Math.max(query.length, target.length);
+  const similarity = (maxLen - distance) / maxLen;
+
+  return similarity >= 0.5 ? similarity : 0;
 }
 
-// Updated findSiteByCity function to handle city matching better
-const findSiteByCity = (city) => {
-  console.log("city: ", city);
-  //console.log("Sites: ", sites, " -> ", sites.length);
-    for(let i in sites) {
-      console.log(i, "-> ", sites[i]);
-      if(sites[i]?.name && matchStrings(city, sites[i]?.name)) {
-        //console.log(sites[i], "->", city, "|", sites[i]?.name);
-        return sites[i];
-      }
-  
-      if(sites[i]?.city &&  matchStrings(city, sites[i]?.city)){
-       // console.log("city: ", sites[i].id);
-        return sites[i];
-      }
-  
-    }
-  };
+const findSiteByCity = (city, query) => {
+  if (!city) return [];
 
-// 🛠 Helper function to format date as YYYY-MM-DDTHH:MM
+  let results = sites.filter(site => site.city?.toLowerCase() === city.toLowerCase());
+
+  if (query) {
+    results = results
+      .map(site => ({ site, matchScore: matchStrings(query, site.name) }))
+      .filter(item => item.matchScore > 0)
+      .sort((a, b) => b.matchScore - a.matchScore) // Prioritize exact substring matches
+      .map(item => item.site);
+  }
+
+  return results;
+};
+
 const formatDate = (date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -58,78 +67,92 @@ const formatDate = (date) => {
 };
 
 const HomeScreen = ({ navigation }) => {
-  // 🛠 Get current date and time
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [query, setQuery] = useState("");
+  const [filteredSites, setFilteredSites] = useState([]);
+  const [selectedSite, setSelectedSite] = useState(null);
+
   const currentDate = new Date();
   const pastDate = new Date(currentDate);
-  pastDate.setDate(currentDate.getDate() - 7); // 7 days ago
+  pastDate.setDate(currentDate.getDate() - 7);
 
-  // 🛠 Use formatted dates as default values
-  const [city, setCity] = useState("");
   const [startDate, setStartDate] = useState(formatDate(pastDate));
   const [endDate, setEndDate] = useState(formatDate(currentDate));
 
-  const handleSubmit = () => {
-    if (!city.trim()) {
-      Alert.alert("Invalid Input", "Please enter a city name.");
-      return;
+  useEffect(() => {
+    if (selectedCity) {
+      const results = findSiteByCity(selectedCity, query);
+      setFilteredSites(results);
     }
+  }, [query, selectedCity]);
 
-    const site = findSiteByCity(city);
-
-    if (!site) {
-      Alert.alert(
-        "No Monitoring Site", 
-        "No air quality monitoring site found in ${city}. Available cities: Delhi, Mumbai, Bengaluru, Hyderabad, Kolkata"
-      );
-      return;
-    }
-
-    Alert.alert(
-      "Monitoring Site Found", 
-      `Site: ${site.name}\nCity: ${site.city}\nID: ${site.id}`
+  if (!selectedCity) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Select a City</Text>
+        <FlatList
+          data={cityImages}
+          keyExtractor={(item) => item.name}
+          numColumns={2}
+          renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => setSelectedCity(item.name)} style={styles.imageContainer}>
+              <Image source={item.src} style={styles.image} />
+              <Text style={styles.cityText}>{item.name}</Text>
+            </TouchableOpacity>
+          )}
+        />
+      </View>
     );
-
-    navigation.navigate("Graph", {
-      siteId: site.id,
-      startDate,
-      endDate,
-    });
-  };
+  }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Air Quality Monitor</Text>
-      <Text style={styles.subtitle}>Available Cities: Delhi, Mumbai, Bengaluru, Hyderabad, Kolkata</Text>
+      <Text style={styles.title}>Selected City: {selectedCity}</Text>
 
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>City:</Text>
-        <TextInput
-          value={city}
-          onChangeText={setCity}
-          style={styles.input}
-          placeholder="Enter city name (e.g., Mumbai)"
-        />
+      <TextInput
+        value={query}
+        onChangeText={(text) => {
+          setQuery(text);
+          setSelectedSite(null);
+        }}
+        style={styles.input}
+        placeholder="Enter site name..."
+      />
 
-        <Text style={styles.label}>Start Date:</Text>
-        <TextInput
-          value={startDate}
-          onChangeText={setStartDate}
-          style={styles.input}
-        />
+      {query.length > 0 && !selectedSite && filteredSites.length > 0 && (
+        <View style={[styles.dropdownContainer, { maxHeight: Math.min(filteredSites.length * 40, 200) }]}>
+          <FlatList
+            data={filteredSites}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedSite(item.name);
+                  setFilteredSites([]);
+                }}
+                style={styles.dropdownItem}
+              >
+                <Text style={styles.result}>{item.name}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      )}
 
-        <Text style={styles.label}>End Date:</Text>
-        <TextInput
-          value={endDate}
-          onChangeText={setEndDate}
-          style={styles.input}
-        />
 
-        <Button 
-          title="Find Site & Fetch Data" 
-          onPress={handleSubmit}
-          color="#4CAF50"
-        />
-      </View>
+      {selectedSite && <Text style={styles.selectedSite}>Selected Site: {selectedSite}</Text>}
+
+      <Text style={styles.label}>Start Date:</Text>
+      <TextInput value={startDate} onChangeText={setStartDate} style={styles.input} />
+
+      <Text style={styles.label}>End Date:</Text>
+      <TextInput value={endDate} onChangeText={setEndDate} style={styles.input} />
+
+      <Button
+        title="Find Site & Fetch Data"
+        onPress={() => navigation.navigate("Graph", { siteId: filteredSites[0]?.id, startDate, endDate })}
+        color="#4CAF50"
+      />
     </View>
   );
 };
@@ -138,40 +161,75 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f5f5f5'
+    backgroundColor: "#f5f5f5",
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
     marginBottom: 8,
-    color: '#333'
+    color: "#333",
   },
-  subtitle: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 20,
-    color: '#666'
+  imageContainer: {
+    flex: 1,
+    alignItems: "center",
+    margin: 10,
   },
-  inputContainer: {
-    backgroundColor: '#fff',
-    padding: 16,
+  image: {
+    width: 150,
+    height: 150,
     borderRadius: 12,
-    elevation: 2
   },
-  label: {
+  cityText: {
     fontSize: 16,
-    marginBottom: 4,
-    color: '#444'
+    marginTop: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 8,
     padding: 8,
     marginBottom: 16,
-    fontSize: 16
-  }
+    fontSize: 16,
+  },
+  result: {
+    fontSize: 16,
+    padding: 8,
+    backgroundColor: "#ddd",
+    marginVertical: 2,
+  },
+  dropdownItem: {
+    padding: 10,
+    backgroundColor: "#e0e0e0",
+    marginVertical: 2,
+  },
+  selectedSite: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#4CAF50",
+    marginTop: 10,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginTop: 10,
+  },
+  dropdownContainer: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    backgroundColor: "#fff",
+    position: "absolute",
+    top: 110, // Adjust as needed
+    left: 20,
+    right: 20,
+    zIndex: 1000,
+    elevation: 5,
+    paddingVertical: 4,
+    minWidth: 200, // ⬅ Ensures a decent minimum width
+    minHeight: 100,
+    maxWidth: "90%", // ⬅ Prevents it from being too wide
+  },
 });
 
 export default HomeScreen;

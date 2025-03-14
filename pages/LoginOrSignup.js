@@ -1,8 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ImageBackground, StyleSheet, Alert } from "react-native";
-
-
-
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { storeUser, getUsers } from "../config/firebase"; 
 
 const LoginOrSignup = ({ navigation }) => {
     const [email, setEmail] = useState("");
@@ -11,11 +9,29 @@ const LoginOrSignup = ({ navigation }) => {
     const [message, setMessage] = useState("");
 
     const handleAction = async () => {
-        console.log("6:");    
-         navigation.navigate("HomeScreen");
-       
-     };
+        if (!email || !password) {
+            Alert.alert("Error", "Both fields are required!");
+            return;
+        }
 
+        if (isLogin) {
+            const users = await getUsers();
+            const userExists = users.some(user => user.username === email && user.password === password);
+
+            if (userExists) {
+                Alert.alert("Success", "Login Successful!");
+                navigation.navigate("HomeScreen");
+                setMessage("Logged in successfully!");
+            } else {
+                Alert.alert("Error", "Invalid credentials!");
+                setMessage("Invalid username or password.");
+            }
+        } else {
+            await storeUser(email, password);
+            Alert.alert("Success", "Signup Successful!");
+            setMessage("User registered successfully!");
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -39,6 +55,8 @@ const LoginOrSignup = ({ navigation }) => {
         </View>
     );
 };
+
+
 
 const styles = StyleSheet.create({
     background: {

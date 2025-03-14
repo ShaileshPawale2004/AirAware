@@ -82,12 +82,12 @@ const HomeScreen = ({ navigation }) => {
   const [endDate, setEndDate] = useState(formatDate(currentDate));
 
   useEffect(() => {
-    if (selectedCity) {
+    if (selectedCity && query.trim() !== "") {
       const results = findSiteByCity(selectedCity, query);
       setFilteredSites(results);
     }
   }, [query, selectedCity]);
-
+  
   if (!selectedCity) {
     return (
       <View style={styles.container}>
@@ -118,7 +118,7 @@ const HomeScreen = ({ navigation }) => {
           setSelectedSite(null);
         }}
         style={styles.input}
-        placeholder="Enter site name..."
+        placeholder="Enter Area Name"
       />
 
       {query.length > 0 && !selectedSite && filteredSites.length > 0 && (
@@ -128,15 +128,16 @@ const HomeScreen = ({ navigation }) => {
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <TouchableOpacity
-                onPress={() => {
-                  setSelectedSite(item.name);
-                  setSiteId(item.id)
-                  setFilteredSites([]);
-                }}
-                style={styles.dropdownItem}
-              >
-                <Text style={styles.result}>{item.name}</Text>
-              </TouchableOpacity>
+              onPress={() => {
+                setSelectedSite(item.name);
+                setSiteId(item.id || "");  // Ensure siteId is set correctly
+                setFilteredSites([]);
+              }}
+              style={styles.dropdownItem}
+            >
+              <Text style={styles.result}>{item.name}</Text>
+            </TouchableOpacity>
+            
             )}
           />
         </View>
@@ -152,10 +153,17 @@ const HomeScreen = ({ navigation }) => {
       <TextInput value={endDate} onChangeText={setEndDate} style={styles.input} />
 
       <Button
-        title="Find Site & Fetch Data"
-        onPress={() => navigation.navigate("Graph", { siteId: siteId, startDate, endDate })}
-        color="#4CAF50"
-      />
+  title="Find Area & Fetch Data"
+  onPress={() => {
+    if (!siteId) {
+      alert("Please select a valid area before fetching data!");
+      return;
+    }
+    navigation.navigate("Graph", { siteId, startDate, endDate });
+  }}
+  color="#4CAF50"
+/>
+
     </View>
   );
 };
@@ -163,37 +171,54 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#1F3B5F",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 30,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
+    color: "#FFFFFF",
+    marginTop: 40,
+    marginBottom: 40,
     textAlign: "center",
-    marginBottom: 8,
-    color: "#333",
+    textShadowColor: "rgba(0, 0, 0, 0.5)",
+    textShadowOffset: { width: 3, height: 3 },
+    textShadowRadius: 10,
   },
   imageContainer: {
-    flex: 1,
     alignItems: "center",
-    margin: 10,
+    marginVertical: 10,
+    width: 160, // Improved size for spacing
   },
   image: {
-    width: 150,
-    height: 150,
-    borderRadius: 12,
+    width: 140, 
+    height: 140, 
+    borderRadius: 20,
+    borderWidth: 4,
+    borderColor: "#00BFFF",
+    backgroundColor: "#E6F7FF", 
+    shadowColor: "#00BFFF",
+    shadowOpacity: 0.9,
+    shadowRadius: 15,
+    elevation: 12,
   },
   cityText: {
-    fontSize: 16,
+    fontSize: 20,
     marginTop: 8,
+    color: "#B0C4DE",
+    fontWeight: "600",
   },
   input: {
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
-    padding: 8,
+    padding: 10,
     marginBottom: 16,
-    fontSize: 16,
+    width: "90%",
+    fontSize: 18,
+    backgroundColor: "#f0f8ff",
   },
   result: {
     fontSize: 16,
@@ -202,37 +227,42 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   dropdownItem: {
-    padding: 10,
+    padding: 12,
     backgroundColor: "#e0e0e0",
-    marginVertical: 2,
+    marginVertical: 4,
   },
   selectedSite: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#4CAF50",
-    marginTop: 10,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginTop: 10,
+    marginTop: 12,
   },
   dropdownContainer: {
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
     backgroundColor: "#fff",
-    position: "absolute",
-    top: 110, // Adjust as needed
-    left: 20,
-    right: 20,
-    zIndex: 1000,
-    elevation: 5,
-    paddingVertical: 4,
-    minWidth: 200, // ⬅ Ensures a decent minimum width
-    minHeight: 100,
-    maxWidth: "90%", // ⬅ Prevents it from being too wide
+    width: "90%",
+    maxHeight: 200,
+    marginTop: 10,
+  },
+  buttonContainer: {
+    marginTop: 40,
+    marginBottom: 40,
+    width: "90%",
+  },
+  label:{
+    color:'#fff',
+    fontSize:30,
+    marginTop:20,
+    marginBottom:20,
+    fontWeight:"bold",
+  },
+  find:{
+    marginTop:20,
   },
 });
+
+
 
 export default HomeScreen;

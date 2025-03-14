@@ -43,7 +43,7 @@ function matchStrings(query, target) {
 
 const findSiteByCity = (city, query) => {
   if (!city) return [];
-
+  console.log("query: ", query);
   let results = sites.filter(site => site.city?.toLowerCase() === city.toLowerCase());
 
   if (query) {
@@ -53,7 +53,8 @@ const findSiteByCity = (city, query) => {
       .sort((a, b) => b.matchScore - a.matchScore) // Prioritize exact substring matches
       .map(item => item.site);
   }
-
+  console.log("results: ", results);
+  
   return results;
 };
 
@@ -71,6 +72,7 @@ const HomeScreen = ({ navigation }) => {
   const [query, setQuery] = useState("");
   const [filteredSites, setFilteredSites] = useState([]);
   const [selectedSite, setSelectedSite] = useState(null);
+  const [siteId, setSiteId] = useState("");
 
   const currentDate = new Date();
   const pastDate = new Date(currentDate);
@@ -128,6 +130,7 @@ const HomeScreen = ({ navigation }) => {
               <TouchableOpacity
                 onPress={() => {
                   setSelectedSite(item.name);
+                  setSiteId(item.id)
                   setFilteredSites([]);
                 }}
                 style={styles.dropdownItem}
@@ -150,7 +153,7 @@ const HomeScreen = ({ navigation }) => {
 
       <Button
         title="Find Site & Fetch Data"
-        onPress={() => navigation.navigate("Graph", { siteId: filteredSites[0]?.id, startDate, endDate })}
+        onPress={() => navigation.navigate("Graph", { siteId: siteId, startDate, endDate })}
         color="#4CAF50"
       />
     </View>

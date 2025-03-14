@@ -14,6 +14,7 @@ export default function App() {
           component={LoginOrSignup}
           options={{ headerShown: false }}
         />
+        <Stack.Screen name="HomeScreen" component={HomeScreen} options={{ title: "Home" }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

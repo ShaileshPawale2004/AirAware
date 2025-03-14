@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, Button, Alert, StyleSheet } from "react-native";
-import { sites } from "./data"; // Importing the sites list
+import  sites  from "./data"; // Importing the sites list
 
 function levenshteinDistance(s1, s2) {
   const dp = Array(s1.length + 1)
@@ -25,7 +25,7 @@ function matchStrings(str1, str2) {
   const maxLen = Math.max(str1.length, str2.length);
   const similarity = (maxLen - distance) / maxLen; // Normalize score
 
-  return similarity >= 0.5; // Return true if 70% similarity
+  return similarity >= 0.3; // Return true if 70% similarity
 }
 
 // Updated findSiteByCity function to handle city matching better
@@ -89,7 +89,7 @@ const HomeScreen = ({ navigation }) => {
       `Site: ${site.name}\nCity: ${site.city}\nID: ${site.id}`
     );
 
-    navigation.navigate("GraphScreen", {
+    navigation.navigate("Graph", {
       siteId: site.id,
       startDate,
       endDate,

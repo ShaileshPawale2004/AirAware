@@ -2,11 +2,19 @@ import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ImageBackground, StyleSheet, Alert } from "react-native";
 
 
+
+
 const LoginOrSignup = ({ navigation }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isLogin, setIsLogin] = useState(true);
     const [message, setMessage] = useState("");
+
+    const handleAction = async () => {
+        console.log("6:");    
+         navigation.navigate("HomeScreen");
+       
+     };
 
 
     return (
@@ -24,7 +32,7 @@ const LoginOrSignup = ({ navigation }) => {
                 <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} />
                 <TextInput style={styles.input} placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} />
                 {message !== "" && <Text style={styles.message}>{message}</Text>}
-                <TouchableOpacity style={styles.actionButton}>
+                <TouchableOpacity style={styles.actionButton} onPress={handleAction}>
                     <Text style={styles.actionButtonText}>{isLogin ? "Login" : "Signup"}</Text>
                 </TouchableOpacity>
             </View>

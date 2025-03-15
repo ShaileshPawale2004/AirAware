@@ -403,7 +403,7 @@ const Graph = ({ route }) => {
 
     return (
       <View style={styles.chartContainer}>
-        <Text style={styles.chartTitle}>Last 12 Hours Air Quality Data</Text>
+        <Text style={styles.chartTitle}>Last 24 Hours Air Quality Data</Text>
         
         <View style={styles.buttonContainer}>
           <Button

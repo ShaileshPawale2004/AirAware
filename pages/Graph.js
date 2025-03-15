@@ -405,11 +405,14 @@ const Graph = ({ route }) => {
       barPercentage: 0.6,
       fillShadowGradient: "blue",
       fillShadowGradientOpacity: 1,
+      propsForBackgroundLines: {
+        strokeDasharray: ''
+      }
     };
 
     return (
       <View style={styles.chartContainer}>
-        <Text style={styles.chartTitle}>Last 24 Hours Air Quality Data</Text>
+        <Text style={styles.chartTitle}>Recent Hours Air Quality Data</Text>
         
         <View style={styles.buttonContainer}>
           <Button
@@ -511,8 +514,10 @@ const Graph = ({ route }) => {
               height={220}
               chartConfig={{
                 backgroundColor: '#ffffff',
-                backgroundGradientFrom: '#ffffff',
+                backgroundGradientFrom: '#f5f5f5',
                 backgroundGradientTo: '#ffffff',
+                fillShadowGradient: "blue",
+                fillShadowGradientOpacity: 1,
                 decimalPlaces: 2,
                 color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                 labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,

@@ -154,48 +154,77 @@ const HomeScreen = ({ navigation }) => {
       <TextInput value={endDate} onChangeText={setEndDate} style={styles.input} />
 
       <Button
-        title="Find Site & Fetch Data"
-        onPress={() => navigation.navigate("Graph", { siteId: siteId, startDate, endDate, place })}
-        color="#4CAF50"
-      />
+          title="Find Site & Fetch Data"
+  onPress={() => {
+    if (!siteId) {
+      alert("Please select a site.");
+      return;
+    }
+    if (!startDate || !endDate) {
+      alert("Please select valid dates.");
+      return;
+    }
+    navigation.navigate("Graph", { siteId, startDate, endDate, place });
+  }}
+  color="#4CAF50"
+/>
+
     </View>
   );
 };
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#1F3B5F",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 30,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
+    color: "#FFFFFF",
+    marginTop: 40,
+    marginBottom: 40,
     textAlign: "center",
-    marginBottom: 8,
-    color: "#333",
+    textShadowColor: "rgba(0, 0, 0, 0.5)",
+    textShadowOffset: { width: 3, height: 3 },
+    textShadowRadius: 10,
   },
   imageContainer: {
-    flex: 1,
     alignItems: "center",
-    margin: 10,
+    marginVertical: 10,
+    width: 160, // Improved size for spacing
   },
   image: {
-    width: 150,
-    height: 150,
-    borderRadius: 12,
+    width: 140, 
+    height: 140, 
+    borderRadius: 20,
+    borderWidth: 4,
+    borderColor: "#00BFFF",
+    backgroundColor: "#E6F7FF", 
+    shadowColor: "#00BFFF",
+    shadowOpacity: 0.9,
+    shadowRadius: 15,
+    elevation: 12,
   },
   cityText: {
-    fontSize: 16,
+    fontSize: 20,
     marginTop: 8,
+    color: "#B0C4DE",
+    fontWeight: "600",
   },
   input: {
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
-    padding: 8,
+    padding: 10,
     marginBottom: 16,
-    fontSize: 16,
+    width: "90%",
+    fontSize: 18,
+    backgroundColor: "#f0f8ff",
   },
   result: {
     fontSize: 16,
@@ -204,37 +233,43 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   dropdownItem: {
-    padding: 10,
+    padding: 12,
     backgroundColor: "#e0e0e0",
-    marginVertical: 2,
+    marginVertical: 4,
   },
   selectedSite: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#4CAF50",
-    marginTop: 10,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginTop: 10,
+    marginTop: 12,
   },
   dropdownContainer: {
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
     backgroundColor: "#fff",
-    position: "absolute",
-    top: 110,
-    left: 20,
-    right: 20,
-    zIndex: 1000,
-    elevation: 5,
-    paddingVertical: 4,
-    minWidth: 200, 
-    minHeight: 100,
-    maxWidth: "90%", 
+    width: "90%",
+    maxHeight: 200,
+    minHeight:100,
+    marginTop: 10,
+  },
+  buttonContainer: {
+    marginTop: 40,
+    marginBottom: 40,
+    width: "90%",
+  },
+  label:{
+    color:'#fff',
+    fontSize:30,
+    marginTop:20,
+    marginBottom:20,
+    fontWeight:"bold",
+  },
+  find:{
+    marginTop:20,
   },
 });
+
+
 
 export default HomeScreen;

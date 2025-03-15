@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, Dimensions, ScrollView, Button } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, ActivityIndicator, StyleSheet, Dimensions, ScrollView, Button, TouchableOpacity } from 'react-native';
 import { BarChart, LineChart } from 'react-native-chart-kit';
 import Papa from 'papaparse';
 import { useNavigation } from '@react-navigation/native';
+import { captureRef } from "react-native-view-shot";
+import * as Sharing from "expo-sharing";
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -54,6 +56,8 @@ const Graph = ({ route }) => {
   const [viewMode, setViewMode] = useState('daily');
   const [selectedGraph, setSelectedGraph] = useState("pm2.5cnc"); 
   const navigation = useNavigation();
+  const viewRef = useRef();
+
 
   const fetchDelhiData = async () => {
     try {
@@ -253,6 +257,26 @@ const Graph = ({ route }) => {
     }
   };
 
+
+  const takeScreenshot = async () => {
+    try {
+      const uri = await captureRef(viewRef, {
+        format: "png",
+        quality: 0.8,
+      });
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri);
+      } else {
+        alert("Sharing is not available on this device");
+      }
+    } catch (error) {
+      console.error("Error taking screenshot:", error);
+    }
+  };
+
+
+
   const renderComparison = () => {
     if (!delhiData || !dailyData) return null;
 
@@ -281,7 +305,8 @@ const Graph = ({ route }) => {
     ).toFixed(1);
 
     return (
-      <View style={styles.comparisonContainer}>
+      <View>
+      <View style={styles.comparisonContainer}  ref={viewRef}>
         <Text style={styles.chartTitle}>Comparison with Previous Week</Text>
         <Text style={styles.comparisonText}>
           Your current week air quality is{' '}
@@ -311,6 +336,11 @@ const Graph = ({ route }) => {
           style={styles.chart}
           bezier
         />
+      </View>
+      <TouchableOpacity style={styles.button} onPress={takeScreenshot}>
+        <Text style={styles.buttonText}>Share</Text>
+      </TouchableOpacity>
+
       </View>
     );
   };
@@ -624,6 +654,19 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     elevation: 2
+  },
+  button: {
+    alignSelf: "center", 
+    paddingHorizontal: 20, 
+    paddingVertical: 10,
+    backgroundColor: "#007BFF",
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
   },
   infoTitle: {
     fontSize: 18,

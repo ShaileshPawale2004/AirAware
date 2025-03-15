@@ -5,6 +5,7 @@ import Papa from 'papaparse';
 import { useNavigation } from '@react-navigation/native';
 import { captureRef } from "react-native-view-shot";
 import * as Sharing from "expo-sharing";
+import HealthRecommendation from './HealthRecommendation';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -58,6 +59,11 @@ const Graph = ({ route }) => {
   const navigation = useNavigation();
   const viewRef = useRef();
 
+  const handleNavigateToRank = () => {
+    console.log("Navigating to Rank page",place);
+    navigation.navigate('Rank',{place: place});
+
+    };
 
   const fetchDelhiData = async () => {
     try {
@@ -540,6 +546,19 @@ const Graph = ({ route }) => {
         ))}
       </View>
        
+      <View style={styles.rankButtonContainer}>
+          <Button
+              title="View Rankings"
+              onPress={handleNavigateToRank}
+              color="#6200EE"
+          />
+      </View>
+
+
+      <View style={styles.healthContainer}>
+          <HealthRecommendation pm25Level={latestPm25} place={place} />
+      </View>
+
     </ScrollView>
   );
 };
@@ -716,7 +735,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginBottom: 16,
-  }
+  },
+  rankButtonContainer: {
+    marginVertical: 20,
+    paddingHorizontal: 20,
+    alignItems: 'center'
+ },
+ healthContainer: {
+    padding: 8
+ }
 });
 
 export default Graph;

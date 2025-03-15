@@ -5,6 +5,7 @@ import WelcomeScreen from "./pages/WelcomeScreen";
 import LoginOrSignup from "./pages/LoginOrSignup";
 import HomeScreen from "./pages/HomeScreen";
 import Graph from "./pages/Graph";
+import Rank from "./pages/Rank";
 
 const Stack = createStackNavigator();
 
@@ -31,6 +32,10 @@ export default function App() {
           name="Graph"
           component={Graph}
           options={{ title: "Graph" }}
+        />
+        <Stack.Screen
+          name="Rank"
+          component={Rank}
         />
       </Stack.Navigator>
     </NavigationContainer>
